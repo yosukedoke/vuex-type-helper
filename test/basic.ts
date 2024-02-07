@@ -1,11 +1,5 @@
 import { Store } from 'vuex'
-import {
-  DefineGetters,
-  DefineActions,
-  DefineMutations,
-  Dispatcher,
-  Committer
-} from '../'
+import { DefineGetters, DefineActions, DefineMutations, Dispatcher, Committer } from '../'
 
 /**
  * External getters/actions/mutations
@@ -60,18 +54,31 @@ interface FooMutations {
 }
 
 /**
+ * Root type declarations
+ */
+type RootState = {
+  foo: FooState
+}
+
+type RootGetters = {
+  hoge: boolean
+}
+
+/**
  * Module implementation
  */
 const state: FooState = {
   value: 0
 }
 
-const getters: DefineGetters<FooGetters, FooState, BarGetters> = {
-  abc(state, getters) {
+const getters: DefineGetters<FooGetters, FooState, BarGetters, RootGetters, RootState> = {
+  abc(state, getters, rootState, rootGetters) {
     state.value
     getters.abc
     getters.def
     getters.ghi
+    rootState.foo.value
+    rootGetters.hoge
     return ''
   },
 
@@ -83,7 +90,9 @@ const actions: DefineActions<
   FooState,
   FooMutations & BarMutations,
   FooGetters,
-  BarActions
+  BarActions,
+  RootState,
+  RootGetters
 > = {
   foo(ctx, payload) {
     ctx.state.value
@@ -133,6 +142,8 @@ const actions: DefineActions<
   baz(ctx, payload) {
     ctx.getters.abc
     ctx.getters.def
+    ctx.rootState.foo
+    ctx.rootGetters.hoge
 
     payload.qux
   },
@@ -167,14 +178,23 @@ const mutations: DefineMutations<FooMutations, FooState> = {
 }
 
 /**
+ * RootGetters implementation
+ */
+const rootGetters: DefineGetters<RootGetters, RootState> = {
+  hoge: state => state.foo.value > 0
+}
+
+/**
  * Create store
  */
-const store = new Store({
+const store = new Store<RootState>({
+  getters: rootGetters,
   modules: {
     foo: {
       state,
       actions,
-      mutations
+      mutations,
+      getters
     }
   }
 })
@@ -194,5 +214,5 @@ store.commit<Committer<FooMutations>>({
 })
 
 store.commit<Committer<FooMutations>>({
-  type: 'mutationWithoutPayload',
+  type: 'mutationWithoutPayload'
 })
