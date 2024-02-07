@@ -39,12 +39,12 @@ interface ActionContext<State, Getters, Actions, Mutations, RootState = any, Roo
   rootGetters: RootGetters
 }
 
-export type DefineGetters<Getters, State, ExtraGetters = {}> = {
+export type DefineGetters<Getters, State, ExtraGetters = {}, RootGetters = any, RootState = any> = {
   [K in keyof Getters]: (
     state: State,
     getters: Getters & ExtraGetters,
-    rootState: any,
-    rootGetters: any
+    rootState: RootState,
+    rootGetters: RootGetters
   ) => Getters[K]
 }
 
