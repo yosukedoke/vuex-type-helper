@@ -31,11 +31,12 @@ interface Commit<P> {
   <P extends BasePayload>(payloadWithType: P, options: RootOption): void
 }
 
-interface ActionContext<State, Getters, Actions, Mutations>
-  extends BaseActionContext<State, any> {
+interface ActionContext<State, Getters, Actions, Mutations, RootState = any, RootGetters = any>
+  extends BaseActionContext<State, RootState> {
   getters: Getters
   dispatch: Dispatch<Actions>
   commit: Commit<Mutations>
+  rootGetters: RootGetters
 }
 
 export type DefineGetters<Getters, State, ExtraGetters = {}> = {
@@ -52,11 +53,13 @@ export type DefineActions<
   State,
   Mutations,
   Getters = {},
-  ExtraActions = {}
+  ExtraActions = {},
+  RootState = any,
+  RootGetters = any
 > = {
   [K in keyof Actions]: (
     this: Store<State>,
-    ctx: ActionContext<State, Getters, Actions & ExtraActions, Mutations>,
+    ctx: ActionContext<State, Getters, Actions & ExtraActions, Mutations, RootState, RootGetters>,
     payload: Actions[K]
   ) => void | Promise<any>
 }
